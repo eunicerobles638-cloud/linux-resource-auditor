@@ -1,22 +1,22 @@
+import shutil
+import psutil
 import os
 
-print("--- SRE SMART MONITOR ACTIVE ---")
+def check_system_health():
+    total, used, free = shutil.disk_usage("/")
+    disk_percent = (used / total) * 100
+    
+    ram_percent = psutil.virtual_memory().percent
+    
+    print(f"--- SYSTEM REPORT ---")
+    print(f"Disk Usage: {disk_percent:.2f}%")
+    print(f"RAM Usage: {ram_percent:.2f}%")
+    
+    if disk_percent > 90 or ram_percent > 90:
+        print("ALERT: CRITICAL STATUS!")
+    else:
+        print("Status: HEALTHY ✅")
 
-storage_data = os.popen("df -h $HOME").read()
-print(f"Current Status:\n{storage_data}")
-
-for line in storage_data.split('\n'):
-    if '/data/data/com.termux' in line:
-        columns = line.split()
-        usage_pct = columns[4].replace('%', '')
-        usage_int = int(usage_pct)
-
-        print(f"\n[ANALYSIS]: Current Usage is at {usage_int}%")
-
-        if usage_int >= 90:
-            print("❌ CRITICAL: Storage is almost full! Immediate cleanup required.")
-        elif usage_int >= 75:
-            print("⚠️ WARNING: Storage usage is high. Monitor closely.")
-        else:
-            print("✅ HEALTHY: Storage levels are within normal limits.")
+if __name__ == "__main__":
+    check_system_health()
 
