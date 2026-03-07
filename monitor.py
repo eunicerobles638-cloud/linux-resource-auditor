@@ -7,13 +7,24 @@ def check_system_health():
     disk_percent = (used / total) * 100
     ram_percent = psutil.virtual_memory().percent
     
+    try:
+        cpu_percent = psutil.cpu_percent(interval=1)
+    except PermissionError:
+        cpu_percent = 0.0
+
     print(f"--- SYSTEM REPORT ---")
     print(f"Disk Usage: {disk_percent:.2f}%")
     print(f"RAM Usage: {ram_percent:.2f}%")
-    
+
+    if disk_percent > 90:
+        print("ALERT: Disk is almost full! Starting Auto-Cleanup...")
+        cache_path = "/data/data/com.termux/files/home/.cache"
+        if os.path.exists(cache_path):
+            shutil.rmtree(cache_path)
+            print("SUCCESS: Cache cleared to free up space.")
+        
     if disk_percent > 90 or ram_percent > 90:
-        print("ALERT: CRITICAL STATUS!")
-        os.system('termux-notification --title "SRE ALERT" --content "Critical Resource Usage! Disk: {:.2f}% RAM: {:.2f}%" --priority high'.format(disk_percent, ram_percent))
+        os.system('termux-notification --title "SRE ALERT" --content "Disk: {:.2f}% RAM: {:.2f}%" --priority high'.format(disk_percent, ram_percent))
     else:
         print("Status: HEALTHY ✅")
 
